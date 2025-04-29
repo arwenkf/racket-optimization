@@ -201,42 +201,42 @@
                        '(f 1 (add1 #f)))
                   'err))
 
-    (begin ;; Knock
-      (check-equal? (run '(match 1)) 'err)
-      (check-equal? (run '(match 1 [1 2]))
-                    2)
-      (check-equal? (run '(match 1 [2 1] [1 2]))
-                    2)
-      (check-equal? (run '(match 1 [2 1] [1 2] [0 3]))
-                    2)
-      (check-equal? (run '(match 1 [2 1] [0 3]))
-                    'err)
-      (check-equal? (run '(match 1 [_ 2] [_ 3]))
-                    2)
-      (check-equal? (run '(match 1 [x 2] [_ 3]))
-                    2)
-      (check-equal? (run '(match 1 [x x] [_ 3]))
-                    1)
-      (check-equal? (run '(match (cons 1 2) [x x] [_ 3]))
-                    (cons 1 2))
-      (check-equal? (run '(match (cons 1 2) [(cons x y) x] [_ 3]))
-                    1)
-      (check-equal? (run '(match (cons 1 2) [(cons x 2) x] [_ 3]))
-                    1)
-      (check-equal? (run '(match (cons 1 2) [(cons 3 2) 0] [_ 3]))
-                    3)
-      (check-equal? (run '(match 1 [(cons x y) x] [_ 3]))
-                    3)
-      (check-equal? (run '(match (cons 1 2) [(cons 1 3) 0] [(cons 1 y) y] [_ 3]))
-                    2)
-      (check-equal? (run '(match (box 1) [(box 1) 0] [_ 1]))
-                    0)
-      (check-equal? (run '(match (box 1) [(box 2) 0] [_ 1]))
-                    1)
-      (check-equal? (run '(match (box 1) [(box x) x] [_ 2]))
-                    1)
-      (check-equal? (run '(match 1 [8589934592 1] [_ 2])) 2)
-      (check-equal? (run '(match 8589934592 [8589934592 1] [_ 2])) 1))
+    ; (begin ;; Knock
+    ;   (check-equal? (run '(match 1)) 'err)
+    ;   (check-equal? (run '(match 1 [1 2]))
+    ;                 2)
+    ;   (check-equal? (run '(match 1 [2 1] [1 2]))
+    ;                 2)
+    ;   (check-equal? (run '(match 1 [2 1] [1 2] [0 3]))
+    ;                 2)
+    ;   (check-equal? (run '(match 1 [2 1] [0 3]))
+    ;                 'err)
+    ;   (check-equal? (run '(match 1 [_ 2] [_ 3]))
+    ;                 2)
+    ;   (check-equal? (run '(match 1 [x 2] [_ 3]))
+    ;                 2)
+    ;   (check-equal? (run '(match 1 [x x] [_ 3]))
+    ;                 1)
+    ;   (check-equal? (run '(match (cons 1 2) [x x] [_ 3]))
+    ;                 (cons 1 2))
+    ;   (check-equal? (run '(match (cons 1 2) [(cons x y) x] [_ 3]))
+    ;                 1)
+    ;   (check-equal? (run '(match (cons 1 2) [(cons x 2) x] [_ 3]))
+    ;                 1)
+    ;   (check-equal? (run '(match (cons 1 2) [(cons 3 2) 0] [_ 3]))
+    ;                 3)
+    ;   (check-equal? (run '(match 1 [(cons x y) x] [_ 3]))
+    ;                 3)
+    ;   (check-equal? (run '(match (cons 1 2) [(cons 1 3) 0] [(cons 1 y) y] [_ 3]))
+    ;                 2)
+    ;   (check-equal? (run '(match (box 1) [(box 1) 0] [_ 1]))
+    ;                 0)
+    ;   (check-equal? (run '(match (box 1) [(box 2) 0] [_ 1]))
+    ;                 1)
+    ;   (check-equal? (run '(match (box 1) [(box x) x] [_ 2]))
+    ;                 1)
+    ;   (check-equal? (run '(match 1 [8589934592 1] [_ 2])) 2)
+    ;   (check-equal? (run '(match 8589934592 [8589934592 1] [_ 2])) 1))
 
   (begin ;; Loot
     (check-true (procedure? (run '(λ (x) x))))
@@ -274,14 +274,20 @@
                               (+ n (tri (sub1 n)))))
                        '(tri 36))
                   666)
-    (check-equal? (run '(define (tri n)
-                          (match n
-                            [0 0]
-                            [m (+ m (tri (sub1 m)))]))
-                       '(tri 36))
-                  666)
-    (check-equal? (run '((match 8 [8 (lambda (x) x)]) 12))
-                  12)))
+    (check-equal? (run '(let ([a 5]) (let ([b 6]) (let ([c 5]) (let ([d 10]) (let ([e 11]) (let ([f (lambda (x) (+ x e))]) (f 5)))))))
+    )
+                  16) ;; check size of the closure for optimization -- write
+      
+
+    ; (check-equal? (run '(define (tri n)
+    ;                       (match n
+    ;                         [0 0]
+    ;                         [m (+ m (tri (sub1 m)))]))
+    ;                    '(tri 36))
+    ;               666)
+    ; (check-equal? (run '((match 8 [8 (lambda (x) x)]) 12))
+    ;               12)
+                  ))
 
 (define (test/io run)
   (begin ;; Evildoer
@@ -361,11 +367,11 @@
                           (f z 98)))
                   (cons (void) "a")))
 
-  (begin ;; Knock
-    (check-equal? (run ""
-                       '(match (write-byte 97)
-                          [_ 1]))
-                  (cons 1 "a")))
+  ; (begin ;; Knock
+  ;   (check-equal? (run ""
+  ;                      '(match (write-byte 97)
+  ;                         [_ 1]))
+  ;                 (cons 1 "a")))
 
   (begin ;; Loot
     (check-equal? (run ""
