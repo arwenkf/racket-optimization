@@ -18,7 +18,9 @@
 (struct Int Abs () #:transparent)
 (struct Char Abs () #:transparent)
 
+
 (struct abs-vector (v) #:transparent)
+(struct abs-string (v) #:transparent)
 
 ;; type Answer = (list (Or Value 'err) Store)
 
