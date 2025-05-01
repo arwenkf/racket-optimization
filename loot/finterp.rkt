@@ -164,7 +164,7 @@
        [(Var x) (interp-var e r s seen*)]
        [(Lam f xs e1)
         (return e (list (closure f xs e1 r) s))]       
-       
+       ;; TODO trim r to make closure smaller
        [(App e1 es)
         (match (interp-env* (cons e1 es) r s seen*)
           [(list as1 t1)
