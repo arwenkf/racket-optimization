@@ -239,17 +239,28 @@
 
 ;; Expr Expr Expr CEnv Boolean Table -> Asm
 (define (compile-if e1 e2 e3 c t? t)
-  (let ((l1 (gensym 'if))
-        (l2 (gensym 'if)))
-    (seq (compile-e e1 c #f t)
-         (Cmp rax (value->bits #f))
-         (Je l1)
-         (compile-e e2 c t? t)
-         (Jmp l2)
-         (Label l1)
-         (compile-e e3 c t? t)
-         (Label l2))))
-
+  (let ([s (hash-ref t e1)])
+    (cond
+       [(equal? s (set '(#f #hasheq())))
+        (seq 
+          (%% "true branch dead")
+          (compile-e e3 c t? t))] 
+       [(set-member? s '(#f #hasheq()))
+        (let ((l1 (gensym 'if))
+              (l2 (gensym 'if)))
+              (seq (compile-e e1 c #f t)
+                  (Cmp rax (value->bits #f))
+                  (Je l1)
+                  (compile-e e2 c t? t)
+                  (Jmp l2)
+                  (Label l1)
+                  (compile-e e3 c t? t)
+                  (Label l2)))] 
+       [else
+        (seq 
+          (%% "false branch dead")
+          (compile-e e2 c t? t))])))   
+  
 ;; Expr Expr CEnv Boolean Table -> Asm
 (define (compile-begin e1 e2 c t? t)
   (seq (compile-e e1 c #f t)
