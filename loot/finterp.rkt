@@ -6,7 +6,8 @@
          err?
          type-integer?
          type-proc?
-         known-lambda?)
+         known-lambda?
+         ret-void?)
 (require "ast.rkt"
          "parse.rkt")
 
@@ -692,6 +693,10 @@
 
 (define (type-integer? av)
   (andmap (λ (v) (or (integer? v) (Int? v) (err? v)))
+          (set->list av)))
+
+(define (ret-void? av) ;; TODO: fix this aint working
+  (andmap (λ (v) (begin (print v) (equal? (set '(void #hasheq())) v)))
           (set->list av)))
 
 (define (type-proc? av)
