@@ -152,8 +152,10 @@
     (check-equal? (run '(string-length "")) 0)
     (check-equal? (run '(string-length "fred")) 4)
     (check-equal? (run '(string-ref "" 0)) 'err)
+    
     (check-equal? (run '(string-ref (make-string 0 #\a) 0)) 'err)
     ;; TODO fix above case^
+
     (check-equal? (run '(string-ref "fred" 0)) #\f)
     (check-equal? (run '(string-ref "fred" 1)) #\r)
     (check-equal? (run '(string-ref "fred" 2)) #\e)

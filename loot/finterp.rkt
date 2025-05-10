@@ -404,6 +404,7 @@
                                (λ (vs)
                                  (set-add vs (make-string n v)))
                                (set (make-string n v))))))]
+                               
     [(list 'make-string (Int) (? char? v))
      (let ((a (if (current-abstract?)
                   e
@@ -696,7 +697,11 @@
           (set->list av)))
 
 (define (ret-void? av) ;; TODO: fix this aint working
-  (andmap (λ (v) (begin (print v) (equal? (set '(void #hasheq())) v)))
+  (ormap (λ (v) 
+  ;;; (begin (print v) (begin (print (set (void) (hasheq)))
+  (or (equal? (set (void) (hasheq)) v) (set-member? v (void))) 
+  ;;; ))
+  )
           (set->list av)))
 
 (define (type-proc? av)

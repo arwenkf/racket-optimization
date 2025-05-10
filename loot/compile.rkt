@@ -252,12 +252,14 @@
 
 ;; Expr Expr CEnv Boolean Table -> Asm
 (define (compile-begin e1 e2 c t? t)
-
+  ;;; (begin (print (hash-ref t e1))
   (if (ret-void? (hash-ref t e1)) ;; Idea: check if e1 returns void. if it does, keep it. if it doesn't, nuke it 
   ;; bc only things that do side effects are relevant ...?
   (seq (compile-e e1 c #f t)
        (compile-e e2 c t? t)) ;; if it returned void, perform both actions
-  (compile-e e2 c t? t))) ;; otherwise just do the second one 
+  (compile-e e2 c t? t))
+  ;;; )
+  ) ;; otherwise just do the second one 
 
 ;; Expr Expr CEnv Boolean Table -> Asm
 ; (define (compile-begin e1 e2 c t? t)
