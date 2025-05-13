@@ -152,7 +152,7 @@
     (check-equal? (run '(string-length "")) 0)
     (check-equal? (run '(string-length "fred")) 4)
     (check-equal? (run '(string-ref "" 0)) 'err)
-    
+
     (check-equal? (run '(string-ref (make-string 0 #\a) 0)) 'err)
     ;; TODO fix above case^
 
@@ -245,6 +245,10 @@
     (check-true (procedure? (run '(λ (x) x))))
     (check-equal? (run '((λ (x) x) 5))
                   5)
+    
+    ;;; test cases::
+    (check-equal? (run '(let ((x (make-vector 3 #t))) (begin (begin (vector-set! x 0 #f) 2) x)))
+                    '#(#f #t #t))
 
     (check-equal? (run '(let ((f (λ (x) x))) (f 5)))
                   5)

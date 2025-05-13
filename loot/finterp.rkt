@@ -29,6 +29,8 @@
 
 ;; type Storeable = (Vectorof Value)
 ;;                | (abs-vector Value)
+;;                | (Stringof Value)
+;;                | (abs-string Value)
 
 ;; tyep Address = Natural (concrete) | Expr (abstract)
 ;; type Value =  ...
@@ -395,6 +397,7 @@
     
     [(list 'eq? v1 v2)   (set (list (eq? v1 v2) s))]
     
+
     [(list 'make-string (? nonnegative-integer? n) (? char? v))
      (let ((a (if (current-abstract?)
                   e
@@ -414,10 +417,11 @@
                                (λ (vs)
                                  (set-add vs (abs-string v)))
                                (set (abs-string v))))))]
+
     [(list 'string-ref (str-ptr a) (? nonnegative-integer? i))
      (for/fold ([r (set)])
                ([v (hash-ref s a)])
-       (cond [(vector? v)
+       (cond [(string? v)
               (if (< i (string-length v))
                   (set-add r (list (string-ref v i) s))
                   (set-add r (list 'err s)))]
