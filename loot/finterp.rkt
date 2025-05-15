@@ -7,7 +7,8 @@
          type-integer?
          type-proc?
          known-lambda?
-         ret-void?)
+         ret-void?
+         table-lookup)
 (require "ast.rkt"
          "parse.rkt")
 

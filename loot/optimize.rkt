@@ -40,31 +40,26 @@
         [(vector-set!) #f]
         [_ #t]))
 
-;;; ;; Expr -> Expr
-;;; (define (optimize-expr e)
-;;;  (if (table-single? t e) 
-;;;     ; if table single, use that value
-;;;     (val2exp (table-value t e))
-;;;     ; else optimize all the subexpressions
-;;;     (match e
-;;;     [(Lit d) (Lit d)]
-;;;     [(Eof) (Eof)]
-;;;     [(Var x) ((optimize-variable x c))]
-;;;     [(Prim0 p) (Prim0 p)]
-;;;     [(Prim1 p e) (optimize-prim1 p e c t)]
-;;;     [(Prim2 p e1 e2) (optimize-prim2 p e1 e2 c t)]s
-;;;     [(Prim3 p e1 e2 e3) (optimize-prim3 p e1 e2 e3 c t)]
-;;;     [(If e1 e2 e3)
-;;;      (optimize-if e1 e2 e3 c t? t)]
-;;;     [(Begin e1 e2)
-;;;      (optimize-begin e1 e2 c t? t)]
-;;;     [(Let x e1 e2)
-;;;      (optimize-let x e1 e2 c t? t)]
-;;;     [(App e es)
-;;;      (optimize-app e es c t? t)]
-;;;     [(Lam f xs e)
-;;;      (optimize-lam f xs e c)]
-;;;     [(Match e ps es) (optimize-match e ps es c t?)]))
+;; Expr -> Expr
+(define (constant-fold e t)
+    ;; if theres no side effects and just one value, use that value
+ (if (and (safe? e) (table-single? t e)) 
+    ; if table single, use that value
+    (val2exp (table-value t e))
+    ; else optimize all the subexpressions
+    (match e
+    [(Prim1 p e)        (optimize-prim1 p e t)]
+    [(Prim2 p e1 e2)    (optimize-prim2 p e1 e2 t)]
+    [(Prim3 p e1 e2 e3) (optimize-prim3 p e1 e2 e3 t)]
+    [(If e1 e2 e3)      (optimize-if e1 e2 e3 t)]
+    [(Begin e1 e2)      (optimize-begin e1 e2 t)]
+    [(Let x e1 e2)      (optimize-let x e1 e2 t)]
+    [(Lam f xs e)       (Lam f xs (constant-fold e t))]
+    [(App e es) 
+        (App (constant-fold e t) (map (lambda e -> constant-fold e t) es))]
+    [(Match e ps es) 
+        (Match (constant-fold e t) ps (map (lambda e -> constant-fold e t) es))]
+    [_ e])))
 
 
 
@@ -94,24 +89,24 @@
 ;;; ;;;            (Call 'raise_error))
 
 
-;;; ;; TODO only return true if lookup returns a literal
-;;; ;; Table Expr -> Bool
-;;; (define (table-single? t e)
-;;; ;;TODO make sure its not abstract
-;;;   (eq? (set-count (table-lookup t e)) 1))
+;; TODO only return true if lookup returns a literal
+;; Table Expr -> Bool
+(define (table-single? t e)
+;;TODO make sure its not abstract
+  (eq? (set-count (table-lookup t e)) 1))
 
-;;; ;; TODO make this function return 
-;;; ;; Value -> Expr
-;;; (define (val2exp v)
+;; TODO make this function return 
+;; Value -> Expr
+(define (val2exp v)
     
-;;;     )
+    )
 
-;;; ;; Table Expr -> Value
-;;; (define (table-value t e)
-;;; ;;TODO get the fucking value
-;;;   (match (set-first (table-lookup t e))
-;;;   [(list v s) v]
-;;;   ))
+;; Table Expr -> Value
+(define (table-value t e)
+;;TODO get the fucking value
+  (match (set-first (table-lookup t e))
+  [(list v s) v]
+  ))
 
 
 ;;;   ;;; (let [soa (set->list (table-lookup t e))] ( ;; soa is set of answers
