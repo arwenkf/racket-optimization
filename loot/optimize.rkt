@@ -61,7 +61,6 @@
     [_ e])))
 
 
-
 ;; Op1 Expr Table -> Expr
 (define (optimize-prim1 p1 e t)
  (Prim1 p1 (constant-fold e t)))
@@ -74,7 +73,17 @@
 (define (optimize-prim3 p3 e1 e2 e3 t)
  (Prim1 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t)))
  
+ ;; Expr Expr Expr Table -> Expr
+(define (optimize-if e1 e2 e3 t)
+ (If (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t)))
 
+  ;; Var Expr Expr Table -> Expr
+(define (optimize-let x e1 e2 t)
+ (Let x (constant-fold e1 t) (constant-fold e2 t)))
+
+  ;; Expr Expr Table -> Expr
+(define (optimize-begin e1 e2 e3 t)
+ (Begin (constant-fold e1 t) (constant-fold e2 t)))
 
 
 
