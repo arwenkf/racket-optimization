@@ -44,7 +44,6 @@
 (define (constant-fold e t)
     ;; if theres no side effects and just one value, use that value
  (if (and (safe? e) (table-single? t e)) 
-    ; if table single, use that value
     (val2exp (table-value t e))
     ; else optimize all the subexpressions
     (match e
@@ -52,8 +51,8 @@
     [(Prim2 p e1 e2)    (optimize-prim2 p e1 e2 t)]
     [(Prim3 p e1 e2 e3) (optimize-prim3 p e1 e2 e3 t)]
     [(If e1 e2 e3)      (optimize-if e1 e2 e3 t)]
-    [(Begin e1 e2)      (optimize-begin e1 e2 t)]
     [(Let x e1 e2)      (optimize-let x e1 e2 t)]
+    [(Begin e1 e2)      (optimize-begin e1 e2 t)]
     [(Lam f xs e)       (Lam f xs (constant-fold e t))]
     [(App e es) 
         (App (constant-fold e t) (map (lambda e -> constant-fold e t) es))]
@@ -63,8 +62,19 @@
 
 
 
+;; Op1 Expr Table -> Expr
+(define (optimize-prim1 p1 e t)
+ (Prim1 p1 (constant-fold e t)))
+
+ ;; Op2 Expr Table -> Expr
+(define (optimize-prim2 p2 e1 e2 t)
+ (Prim1 p2 (constant-fold e1 t) (constant-fold e2 t)))
+
+ ;; Op3 Expr Table -> Expr
+(define (optimize-prim3 p3 e1 e2 e3 t)
+ (Prim1 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t)))
  
-;;; )
+
 
 
 
