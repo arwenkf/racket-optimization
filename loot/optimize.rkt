@@ -1,5 +1,5 @@
 #lang racket
-(provide optimize)
+(provide constant-fold)
 (require "ast.rkt"
          "parse.rkt"
          "finterp.rkt")
@@ -14,7 +14,7 @@
     [(Var x)            #t]
     [(Prim0 p)          (prim0-safe? p)]
     [(Prim1 p e)        (and (prim1-safe? p) (safe? e))]
-    [(Prim2 p e1 e2)    (and (safe? e1) (safe? e2))]s
+    [(Prim2 p e1 e2)    (and (safe? e1) (safe? e2))]
     [(Prim3 p e1 e2 e3) (and (prim3-safe? p) (safe? e1) (safe? e2) (safe? e3))]
     [(If e1 e2 e3)      (and (safe? e1) (safe? e2) (safe? e3))]
     [(Begin e1 e2)      (and (safe? e1) (safe? e2))]
@@ -25,19 +25,19 @@
 
 (define (prim0-safe? p)
     (match p
-        [(read-byte) #f]
-        [(peek-byte) #f]
-        [(collect-garbage) #f]
+        ['read-byte #f]
+        ['peek-byte #f]
+        ['collect-garbage #f]
         [_ #t]))
 
 (define (prim1-safe? p)
     (match p
-        [(write-byte) #f]
+        ['write-byte #f]
         [_ #t]))
 
 (define (prim3-safe? p)
     (match p
-        [(vector-set!) #f]
+        ['vector-set! #f]
         [_ #t]))
 
 ;; Expr -> Expr
@@ -55,9 +55,9 @@
     [(Begin e1 e2)      (optimize-begin e1 e2 t)]
     [(Lam f xs e)       (Lam f xs (constant-fold e t))]
     [(App e es) 
-        (App (constant-fold e t) (map (lambda e -> constant-fold e t) es))]
+        (App (constant-fold e t) (map (lambda (e) (constant-fold e t)) es))]
     [(Match e ps es) 
-        (Match (constant-fold e t) ps (map (lambda e -> constant-fold e t) es))]
+        (Match (constant-fold e t) ps (map (lambda (e) (constant-fold e t)) es))]
     [_ e])))
 
 
@@ -82,8 +82,12 @@
  (Let x (constant-fold e1 t) (constant-fold e2 t)))
 
   ;; Expr Expr Table -> Expr
-(define (optimize-begin e1 e2 e3 t)
- (Begin (constant-fold e1 t) (constant-fold e2 t)))
+(define (optimize-begin e1 e2 t)
+    (let ((e1-op (constant-fold e1 t)))
+        (if (safe? e1-op)
+            (constant-fold e2 t)
+            (Begin (constant-fold e1 t) (constant-fold e2 t))))
+ )
 
 
 
@@ -115,10 +119,30 @@
   (eq? (set-count (table-lookup t e)) 1))
 
 ;; TODO make this function return 
+;; i started based on val->bits, havent done the complex ones yet
 ;; Value -> Expr
 (define (val2exp v)
-    
+    (cond [(eq? v #t) (Lit #t)]
+        [(eq? v #f) (Lit #f)]
+        [(integer? v) (Lit v)]
+        [(eof-object? v) (Eof)]
+        [(void? v) (Prim0 'void)]
+        ;;; [(empty? v)      #b10011000]
+        [(char? v) (Lit v)]
+        [else (error "not an immediate value" v)])
     )
+
+;;;     (define (value->bits v)
+;;;   (cond [(eq? v #t) #b00011000]
+;;;         [(eq? v #f) #b00111000]
+;;;         [(integer? v) (arithmetic-shift v int-shift)]
+;;;         [(eof-object? v) #b01011000]
+;;;         [(void? v) #b01111000]
+;;;         [(empty? v)      #b10011000]
+;;;         [(char? v)
+;;;          (bitwise-ior type-char
+;;;                       (arithmetic-shift (char->integer v) char-shift))]
+;;;         [else (error "not an immediate value" v)]))
 
 ;; Table Expr -> Value
 (define (table-value t e)
