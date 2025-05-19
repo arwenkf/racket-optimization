@@ -31,11 +31,10 @@
 
 ;; Prog -> Asm
 (define (compile p)
+  (define p (optimize p))
   (define t (analyze p))
   (match p
     [(Prog ds e)
-     (let ((e (constant-fold e t))) ;; optimizing the ast
-     
      (prog (Global 'entry)
            (Extern 'peek_byte)
            (Extern 'read_byte)
@@ -59,7 +58,7 @@
            (compile-lambda-defines (lambdas p) t)
            (Label 'err)
            pad-stack
-           (Call 'raise_error)))]))
+           (Call 'raise_error))]))
 
 ;; [Listof Lam] -> [Listof Id]
 (define (define-ids ds)

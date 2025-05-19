@@ -1,8 +1,9 @@
 #lang racket
-(provide constant-fold)
+(provide constant-fold safe? optimize)
 (require "ast.rkt"
          "parse.rkt"
-         "finterp.rkt")
+         "finterp.rkt"
+         "fv.rkt")
 
 
 ;; Expr -> Bool
@@ -75,22 +76,51 @@
  
  ;; Expr Expr Expr Table -> Expr
 (define (optimize-if e1 e2 e3 t)
- (If (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t)))
+(let ([s (hash-ref t e1)])
+    (cond
+       [(equal? s (set '(#f #hasheq())))
+        (let ([e1o (constant-fold e1 t)] [e3o (constant-fold e3 t)]) (if (safe? e1o) e3o (Begin e1o e3o)))] 
+       [(set-member? s '(#f #hasheq()))
+        (If (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t))] 
+       [else (let ([e1o (constant-fold e1 t)] [e2o (constant-fold e2 t)]) (if (safe? e1o) e2o (Begin e1o e2o)))])))   
 
   ;; Var Expr Expr Table -> Expr
 (define (optimize-let x e1 e2 t)
- (Let x (constant-fold e1 t) (constant-fold e2 t)))
+    (let* ([e1o (constant-fold e1 t)] [e2o (constant-fold e2 t)] [used-vars (fv e2o)] )
+        (if (member x used-vars) (Let x e1o e2o) (if (safe? e1o) e2o (Begin e1o e2o)))
+    )
+)
 
   ;; Expr Expr Table -> Expr
 (define (optimize-begin e1 e2 t)
     (let ((e1-op (constant-fold e1 t)))
         (if (safe? e1-op)
             (constant-fold e2 t)
-            (Begin (constant-fold e1 t) (constant-fold e2 t))))
+            (Begin e1-op (constant-fold e2 t))))
  )
 
+; Prog -> Prog
+(define (optimize p)
+  (define (optimize-loop p)
+    (define t (analyze p))
+    (match p
+      [(Prog ds e)
+       (define p2 (Prog ds (constant-fold e t)))
+       (if (equal? p p2)
+           p
+           (optimize-loop p2))]))
+  (optimize-loop p))
 
+; (define (var-used? e x)
+;     (match e
+;     [(Prim1 p e)        (var-used? e x)]
+;     [(Prim2 p e1 e2)    (or (var-used? e1 x) (var-used? e2 x))]
+;     [(Prim3 p e1 e2 e3) (or (var-used? e1 x) (var-used? e2 x) (var-used? e3 x))]
+;     [(If e1 e2 e3)      (or (var-used? e1 x) (var-used? e2 x) (var-used? e3 x))]
+;     [(Let x e1 e2)      (if (and (var-used? e1 x) )]
+;     [(Begin e1 e2)      (or (var-used? e1 x) (var-used? e2 x))]
 
+; ) 
 ;;; ;;; (Prog ds e)
 ;;; ;;;      (if (table-single? t e) 
 ;;; ;;;      ;; if theres only one thing in the table
