@@ -31,8 +31,7 @@
 
 ;; Prog -> Asm
 (define (compile p)
-  (define p (optimize p))
-  (define t (analyze p))
+  (let* ([p (optimize p)] [t (analyze p)])
   (match p
     [(Prog ds e)
      (prog (Global 'entry)
@@ -58,7 +57,7 @@
            (compile-lambda-defines (lambdas p) t)
            (Label 'err)
            pad-stack
-           (Call 'raise_error))]))
+           (Call 'raise_error))])))
 
 ;; [Listof Lam] -> [Listof Id]
 (define (define-ids ds)
