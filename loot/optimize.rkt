@@ -64,18 +64,18 @@
 
 ;; Op1 Expr Table -> Expr
 (define (optimize-prim1 p1 e t)
- (match (list p1 e))
- [_ (Prim1 p1 (constant-fold e t))])
+ (match (list p1 e)
+ [_ (Prim1 p1 (constant-fold e t))]))
 
  ;; Op2 Expr Table -> Expr
 (define (optimize-prim2 p2 e1 e2 t)
- (match (list p2 e1 e2))
- [_ (Prim1 p2 (constant-fold e1 t) (constant-fold e2 t))])
+ (match (list p2 e1 e2)
+ [_ (Prim2 p2 (constant-fold e1 t) (constant-fold e2 t))]))
 
  ;; Op3 Expr Table -> Expr
 (define (optimize-prim3 p3 e1 e2 e3 t)
- (match (list p3 e1 e2 e3))
- [_ (Prim1 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t))])
+ (match (list p3 e1 e2 e3)
+ [_ (Prim3 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t))]))
  
  ;; Expr Expr Expr Table -> Expr
 (define (optimize-if e1 e2 e3 t)
@@ -112,8 +112,16 @@
 ;; TODO only return true if lookup returns a literal
 ;; Table Expr -> Bool
 (define (table-single? t e)
-;;TODO make sure its not abstract
-  (eq? (set-count (table-lookup t e)) 1))
+  (and (eq? (set-count (table-lookup t e)) 1) (let ((v (table-value t e))) (cond 
+        [(eq? v #t) #t]
+        [(eq? v #f) #t]
+        [(integer? v) #t]
+        [(eof-object? v) #t]
+        [(void? v) #t]
+        ;;; [(empty? v)      #b10011000]
+        [(char? v) #t]
+        [else #f])
+  )))
 
 ;; TODO make this function return 
 ;; i started based on val->bits, havent done the complex ones yet
