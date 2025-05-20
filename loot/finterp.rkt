@@ -340,7 +340,7 @@
              [(abs-vector? v)
               (list (Int) s)]))]
      
-    [(list 'string? v)                    (set (list (str-ptr? v) s))]
+    [(list 'string? v)                    (set (list (or (string? v) (abs-string? v) (str-ptr? v)) s))]
     [(list 'string-length (str-ptr a))
      (for/set ([v (hash-ref s a)])
        (cond [(string? v)
@@ -694,8 +694,6 @@
   (for/set ([x (in-set s)]
             #:when (f x))
     x))
-
-
 
 (define (type-integer? av)
   (andmap (λ (v) (or (integer? v) (Int? v) (err? v)))
