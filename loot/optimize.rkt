@@ -64,15 +64,18 @@
 
 ;; Op1 Expr Table -> Expr
 (define (optimize-prim1 p1 e t)
- (Prim1 p1 (constant-fold e t)))
+ (match (list p1 e))
+ [_ (Prim1 p1 (constant-fold e t))])
 
  ;; Op2 Expr Table -> Expr
 (define (optimize-prim2 p2 e1 e2 t)
- (Prim1 p2 (constant-fold e1 t) (constant-fold e2 t)))
+ (match (list p2 e1 e2))
+ [_ (Prim1 p2 (constant-fold e1 t) (constant-fold e2 t))])
 
  ;; Op3 Expr Table -> Expr
 (define (optimize-prim3 p3 e1 e2 e3 t)
- (Prim1 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t)))
+ (match (list p3 e1 e2 e3))
+ [_ (Prim1 p3 (constant-fold e1 t) (constant-fold e2 t) (constant-fold e3 t))])
  
  ;; Expr Expr Expr Table -> Expr
 (define (optimize-if e1 e2 e3 t)
